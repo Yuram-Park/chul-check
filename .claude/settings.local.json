@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sleep 20 && jobs -l 2>&1)",
+      "Bash(git init:*)"
+    ]
+  }
+}
