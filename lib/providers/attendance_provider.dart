@@ -11,6 +11,7 @@ class AttendanceProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isEditMode = false;
   bool _isSubmitted = false;
+  List<AttendanceModel> _attendancesSnapshot = [];
   String? _errorMessage;
 
   List<AttendanceModel> get attendances => _attendances;
@@ -45,7 +46,6 @@ class AttendanceProvider extends ChangeNotifier {
 
       if (savedAttendances.isNotEmpty) {
         _attendances = savedAttendances;
-        _isSubmitted = true;
       } else {
         _attendances = _members
             .map((m) => AttendanceModel(
@@ -85,7 +85,22 @@ class AttendanceProvider extends ChangeNotifier {
   }
 
   void enterEditMode() {
+    _attendancesSnapshot = _attendances
+        .map((a) => AttendanceModel(
+              memberId: a.memberId,
+              memberName: a.memberName,
+              status: a.status,
+              memo: a.memo,
+              serviceType: a.serviceType,
+            ))
+        .toList();
     _isEditMode = true;
+    notifyListeners();
+  }
+
+  void cancelEdit() {
+    _attendances = _attendancesSnapshot;
+    _isEditMode = false;
     notifyListeners();
   }
 

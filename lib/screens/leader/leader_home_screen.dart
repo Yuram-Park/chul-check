@@ -46,6 +46,10 @@ class _LeaderHomeScreenState extends State<LeaderHomeScreen> {
     }
   }
 
+  void _cancelEdit() {
+    context.read<AttendanceProvider>().cancelEdit();
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user!;
@@ -90,53 +94,6 @@ class _LeaderHomeScreenState extends State<LeaderHomeScreen> {
                   late: provider.lateCount,
                   etc: provider.etcCount,
                 ),
-                // 제출 완료 배너
-                if (provider.isSubmitted && !provider.isEditMode)
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFBBF7D0)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: AppTheme.present,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          '출석이 제출되었습니다',
-                          style: TextStyle(
-                            color: Color(0xFF15803D),
-                            fontSize: 13,
-                          ),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: provider.enterEditMode,
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            '수정하기',
-                            style: TextStyle(
-                              color: AppTheme.primary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 const SizedBox(height: 8),
                 Expanded(
                   child: ListView.builder(
@@ -151,7 +108,7 @@ class _LeaderHomeScreenState extends State<LeaderHomeScreen> {
                       return MemberCard(
                         member: member,
                         attendance: attendance,
-                        enabled: !provider.isSubmitted || provider.isEditMode,
+                        enabled: provider.isEditMode,
                         onStatusChanged: (s) =>
                             provider.updateStatus(member.id, s),
                       );
@@ -160,25 +117,72 @@ class _LeaderHomeScreenState extends State<LeaderHomeScreen> {
                 ),
               ],
             ),
-      // 하단 제출 버튼
+      // 하단 버튼
       bottomNavigationBar: provider.isLoading
           ? null
           : SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: ElevatedButton(
-                  onPressed: (provider.isSubmitted && !provider.isEditMode)
-                      ? null
-                      : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: provider.isSubmitted && !provider.isEditMode
-                        ? Colors.grey
-                        : AppTheme.primary,
-                  ),
-                  child: Text(
-                    provider.isEditMode ? '수정 완료' : '제출하기',
-                  ),
-                ),
+                child: provider.isEditMode
+                    // 편집 모드: 작성취소 + 제출하기
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _cancelEdit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey.shade300,
+                                foregroundColor: Colors.grey.shade600,
+                              ),
+                              child: const Text('작성취소'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                              ),
+                              child: const Text('제출하기'),
+                            ),
+                          ),
+                        ],
+                      )
+                    : provider.isSubmitted
+                        // 제출 완료 상태: 수정하기 + 제출완료(비활성)
+                        ? Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: provider.enterEditMode,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primary,
+                                  ),
+                                  child: const Text('수정하기'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey.shade300,
+                                    foregroundColor: Colors.grey.shade500,
+                                  ),
+                                  child: const Text('제출완료'),
+                                ),
+                              ),
+                            ],
+                          )
+                        // 초기 상태: 작성하기
+                        : ElevatedButton(
+                            onPressed: provider.enterEditMode,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                            ),
+                            child: const Text('작성하기'),
+                          ),
               ),
             ),
     );
