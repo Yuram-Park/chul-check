@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/village_model.dart';
 import '../../providers/auth_provider.dart';
@@ -17,6 +18,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   List<VillageModel> _villages = [];
   Map<String, dynamic> _stats = {};
   bool _isLoading = true;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -38,6 +40,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
+  void _setDate(DateTime date) {
+    setState(() => _selectedDate = date);
+    _loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user!;
@@ -47,10 +54,30 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         title: const Text('전체 현황'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.calendar_month_outlined),
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2020),
+                lastDate: DateTime.now(),
+                locale: const Locale('ko', 'KR'),
+              );
+              if (picked != null) _setDate(picked);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _confirmLogout(context),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: _DatePickerBar(
+            selectedDate: _selectedDate,
+            onDateChanged: _setDate,
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -244,6 +271,68 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             },
             child: const Text('로그아웃',
                 style: TextStyle(color: AppTheme.absent)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DatePickerBar extends StatelessWidget {
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onDateChanged;
+
+  const _DatePickerBar({
+    required this.selectedDate,
+    required this.onDateChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () =>
+                onDateChanged(selectedDate.subtract(const Duration(days: 7))),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: selectedDate,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                  locale: const Locale('ko', 'KR'),
+                );
+                if (picked != null) onDateChanged(picked);
+              },
+              child: Center(
+                child: Text(
+                  DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(selectedDate),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: selectedDate.isBefore(
+                    DateTime.now().subtract(const Duration(days: 1)))
+                ? () => onDateChanged(selectedDate.add(const Duration(days: 7)))
+                : null,
           ),
         ],
       ),

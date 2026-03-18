@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../../models/cell_model.dart';
 import '../../providers/attendance_provider.dart';
 import '../../utils/app_theme.dart';
@@ -28,11 +27,17 @@ class _CellAttendanceScreenState extends State<CellAttendanceScreen> {
   Future<void> _submit() async {
     final provider = context.read<AttendanceProvider>();
     final success = await provider.submit(widget.cell.id);
-    if (success) {
-      Fluttertoast.showToast(
-        msg: '출석이 제출되었습니다',
-        backgroundColor: AppTheme.present,
-        textColor: Colors.white,
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            '출석이 제출되었습니다',
+            style: TextStyle(fontSize: 14, color: Colors.white),
+          ),
+          backgroundColor: Color(0xFF0EA5E9),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,6 +47,10 @@ class _CellAttendanceScreenState extends State<CellAttendanceScreen> {
         ),
       );
     }
+  }
+
+  void _cancelEdit() {
+    context.read<AttendanceProvider>().cancelEdit();
   }
 
   @override
@@ -73,38 +82,6 @@ class _CellAttendanceScreenState extends State<CellAttendanceScreen> {
                   late: provider.lateCount,
                   etc: provider.etcCount,
                 ),
-                if (provider.isSubmitted && !provider.isEditMode)
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFBBF7D0)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle,
-                            color: AppTheme.present, size: 16),
-                        const SizedBox(width: 8),
-                        const Text('출석이 제출되었습니다',
-                            style: TextStyle(
-                                color: Color(0xFF15803D), fontSize: 13)),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: provider.enterEditMode,
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                          ),
-                          child: const Text('수정하기',
-                              style: TextStyle(
-                                  color: AppTheme.primary, fontSize: 13)),
-                        ),
-                      ],
-                    ),
-                  ),
                 const SizedBox(height: 8),
                 Expanded(
                   child: ListView.builder(
@@ -119,7 +96,7 @@ class _CellAttendanceScreenState extends State<CellAttendanceScreen> {
                       return MemberCard(
                         member: member,
                         attendance: attendance,
-                        enabled: !provider.isSubmitted || provider.isEditMode,
+                        enabled: provider.isEditMode,
                         onStatusChanged: (s) =>
                             provider.updateStatus(member.id, s),
                       );
@@ -133,19 +110,63 @@ class _CellAttendanceScreenState extends State<CellAttendanceScreen> {
           : SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: ElevatedButton(
-                  onPressed:
-                      (provider.isSubmitted && !provider.isEditMode)
-                          ? null
-                          : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        provider.isSubmitted && !provider.isEditMode
-                            ? Colors.grey
-                            : AppTheme.primary,
-                  ),
-                  child: Text(provider.isEditMode ? '수정 완료' : '제출하기'),
-                ),
+                child: provider.isEditMode
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _cancelEdit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey.shade300,
+                                foregroundColor: Colors.grey.shade600,
+                              ),
+                              child: const Text('작성취소'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                              ),
+                              child: const Text('제출하기'),
+                            ),
+                          ),
+                        ],
+                      )
+                    : provider.isSubmitted
+                        ? Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: provider.enterEditMode,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primary,
+                                  ),
+                                  child: const Text('수정하기'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey.shade300,
+                                    foregroundColor: Colors.grey.shade500,
+                                  ),
+                                  child: const Text('제출완료'),
+                                ),
+                              ),
+                            ],
+                          )
+                        : ElevatedButton(
+                            onPressed: provider.enterEditMode,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                            ),
+                            child: const Text('작성하기'),
+                          ),
               ),
             ),
     );

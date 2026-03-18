@@ -100,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     _PhoneFormatter(),
                   ],
                   autofillHints: const [AutofillHints.telephoneNumber],
+                  onFieldSubmitted: (_) => _login(),
                   decoration: InputDecoration(
                     hintText: '010-0000-0000',
                     prefixIcon: const Icon(Icons.phone_outlined),
