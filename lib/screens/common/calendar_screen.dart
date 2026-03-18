@@ -127,6 +127,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     enabled: provider.isEditMode,
                     onStatusChanged: (s) =>
                         provider.updateStatus(member.id, s),
+                    onMemoChanged: (memo) =>
+                        provider.updateMemo(member.id, memo),
                   );
                 },
               ),

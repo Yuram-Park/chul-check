@@ -15,26 +15,29 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedPhone = prefs.getString('saved_phone');
-    if (savedPhone != null) {
+    final savedIdKey = prefs.getString('saved_id_key');
+    final savedLastFour = prefs.getString('saved_last_four');
+    if (savedIdKey != null && savedLastFour != null) {
       try {
-        _user = await MockService.login(savedPhone);
+        _user = await MockService.login(savedIdKey, savedLastFour);
         notifyListeners();
       } catch (_) {
-        await prefs.remove('saved_phone');
+        await prefs.remove('saved_id_key');
+        await prefs.remove('saved_last_four');
       }
     }
   }
 
-  Future<bool> login(String phone) async {
+  Future<bool> login(String idKey, String lastFour) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _user = await MockService.login(phone);
+      _user = await MockService.login(idKey, lastFour);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('saved_phone', phone);
+      await prefs.setString('saved_id_key', idKey);
+      await prefs.setString('saved_last_four', lastFour);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -48,7 +51,8 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('saved_phone');
+    await prefs.remove('saved_id_key');
+    await prefs.remove('saved_last_four');
     _user = null;
     notifyListeners();
   }

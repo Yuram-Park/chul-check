@@ -57,26 +57,27 @@ class MockService {
     ),
   ];
 
-  // phone → UserModel 매핑 (테스트용)
+  // idKey(이름+생일4자리) + lastFour(전화번호 뒤 4자리) → UserModel 매핑 (테스트용)
   static final _users = {
-    '010-0000-0001': UserModel(
+    '이리더0101|0001': UserModel(
       id: 10, name: '이리더', phone: '010-0000-0001', gender: Gender.male,
       role: UserRole.leader, cellId: 1, cellName: '소망셀', villageId: 1, villageName: '다윗마을',
     ),
-    '010-0000-0002': UserModel(
+    '김마을장0202|0002': UserModel(
       id: 20, name: '김마을장', phone: '010-0000-0002', gender: Gender.male,
       role: UserRole.villageMaster, villageId: 1, villageName: '다윗마을',
     ),
-    '010-0000-0003': UserModel(
+    '박간사0303|0003': UserModel(
       id: 30, name: '박간사', phone: '010-0000-0003', gender: Gender.female,
       role: UserRole.admin,
     ),
   };
 
-  static Future<UserModel> login(String phone) async {
+  static Future<UserModel> login(String idKey, String lastFour) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    final user = _users[phone];
-    if (user == null) throw Exception('등록되지 않은 전화번호입니다');
+    final key = '$idKey|$lastFour';
+    final user = _users[key];
+    if (user == null) throw Exception('등록되지 않은 계정입니다');
     return user;
   }
 

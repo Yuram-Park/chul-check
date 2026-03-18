@@ -12,19 +12,24 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phoneController = TextEditingController();
+  final _idController = TextEditingController();
+  final _lastFourController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _lastFourFocusNode = FocusNode();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _idController.dispose();
+    _lastFourController.dispose();
+    _lastFourFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    final phone = _phoneController.text.trim();
-    final success = await context.read<AuthProvider>().login(phone);
+    final idKey = _idController.text.trim();
+    final lastFour = _lastFourController.text.trim();
+    final success = await context.read<AuthProvider>().login(idKey, lastFour);
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -77,13 +82,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Center(
                   child: Text(
                     '청년부 출석 관리',
-                    style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
+                    style: TextStyle(
+                        fontSize: 15, color: AppTheme.textSecondary),
                   ),
                 ),
                 const Spacer(flex: 2),
-                // 전화번호 입력
+                // 이름 + 생일 4자리
                 const Text(
-                  '전화번호',
+                  '이름 + 생일 4자리',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -92,18 +98,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(11),
-                    _PhoneFormatter(),
-                  ],
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                  onFieldSubmitted: (_) => _login(),
+                  controller: _idController,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: (_) {
+                    FocusScope.of(context).requestFocus(_lastFourFocusNode);
+                  },
                   decoration: InputDecoration(
-                    hintText: '010-0000-0000',
-                    prefixIcon: const Icon(Icons.phone_outlined),
+                    hintText: '홍길동0112',
+                    prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -113,15 +116,59 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                      borderSide: const BorderSide(
+                          color: AppTheme.primary, width: 2),
                     ),
                     filled: true,
                     fillColor: Colors.white,
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return '전화번호를 입력하세요';
-                    final digits = v.replaceAll('-', '');
-                    if (digits.length < 10) return '올바른 전화번호를 입력하세요';
+                    if (v == null || v.trim().isEmpty) return '이름과 생일 4자리를 입력하세요';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                // 휴대전화번호 뒤 4자리
+                const Text(
+                  '휴대전화번호 뒤 4자리',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _lastFourController,
+                  focusNode: _lastFourFocusNode,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(4),
+                  ],
+                  onFieldSubmitted: (_) => _login(),
+                  decoration: InputDecoration(
+                    hintText: '1234',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          color: AppTheme.primary, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return '전화번호 뒤 4자리를 입력하세요';
+                    if (v.length < 4) return '4자리를 모두 입력하세요';
                     return null;
                   },
                 ),
@@ -134,14 +181,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFBBF7D0)),
                   ),
-                  child: Column(
+                  child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('테스트 계정', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D))),
+                    children: [
+                      Text('테스트 계정',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF15803D))),
                       SizedBox(height: 4),
-                      Text('리더: 010-0000-0001', style: TextStyle(fontSize: 12, color: Color(0xFF166534))),
-                      Text('마을장: 010-0000-0002', style: TextStyle(fontSize: 12, color: Color(0xFF166534))),
-                      Text('간사: 010-0000-0003', style: TextStyle(fontSize: 12, color: Color(0xFF166534))),
+                      Text('리더: 이리더0101 / 0001',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF166534))),
+                      Text('마을장: 김마을장0202 / 0002',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF166534))),
+                      Text('간사: 박간사0303 / 0003',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF166534))),
                     ],
                   ),
                 ),
@@ -167,29 +224,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PhoneFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    String formatted = '';
-    if (digits.length <= 3) {
-      formatted = digits;
-    } else if (digits.length <= 7) {
-      formatted = '${digits.substring(0, 3)}-${digits.substring(3)}';
-    } else {
-      formatted =
-          '${digits.substring(0, 3)}-${digits.substring(3, 7)}-${digits.substring(7)}';
-    }
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
