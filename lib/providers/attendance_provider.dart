@@ -11,6 +11,7 @@ class AttendanceProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isEditMode = false;
   bool _isSubmitted = false;
+  bool _hasServerData = false;
   List<AttendanceModel> _attendancesSnapshot = [];
   String? _errorMessage;
 
@@ -20,6 +21,7 @@ class AttendanceProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isEditMode => _isEditMode;
   bool get isSubmitted => _isSubmitted;
+  bool get hasServerData => _hasServerData;
   String? get errorMessage => _errorMessage;
 
   String get formattedDate => DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -37,6 +39,7 @@ class AttendanceProvider extends ChangeNotifier {
     _isLoading = true;
     _isSubmitted = false;
     _isEditMode = false;
+    _hasServerData = false;
     _errorMessage = null;
     notifyListeners();
 
@@ -46,6 +49,7 @@ class AttendanceProvider extends ChangeNotifier {
 
       if (savedAttendances.isNotEmpty) {
         _attendances = savedAttendances;
+        _hasServerData = true;
       } else {
         _attendances = _members
             .map((m) => AttendanceModel(

@@ -94,7 +94,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                 ),
                 const Spacer(),
-                if (provider.isSubmitted && !provider.isEditMode)
+                if (provider.hasServerData && !provider.isEditMode)
                   TextButton(
                     onPressed: provider.enterEditMode,
                     child: const Text('수정하기'),
@@ -124,7 +124,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   return MemberCard(
                     member: member,
                     attendance: attendance,
-                    enabled: provider.isEditMode || !provider.isSubmitted,
+                    enabled: provider.isEditMode,
                     onStatusChanged: (s) =>
                         provider.updateStatus(member.id, s),
                   );

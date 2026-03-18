@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../utils/app_theme.dart';
@@ -30,11 +29,17 @@ class _LeaderHomeScreenState extends State<LeaderHomeScreen> {
     final user = context.read<AuthProvider>().user!;
     final provider = context.read<AttendanceProvider>();
     final success = await provider.submit(user.cellId!);
-    if (success) {
-      Fluttertoast.showToast(
-        msg: '출석이 제출되었습니다',
-        backgroundColor: AppTheme.present,
-        textColor: Colors.white,
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            '출석이 제출되었습니다',
+            style: TextStyle(fontSize: 14, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF0EA5E9),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
