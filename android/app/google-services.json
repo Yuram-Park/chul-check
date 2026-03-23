@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "218249661885",
+    "project_id": "chum-check",
+    "storage_bucket": "chum-check.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:218249661885:android:7bbeda5f282bea4b3f96d4",
+        "android_client_info": {
+          "package_name": "com.chulcheck.chul_check"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7bwZLTiHk8PchCqSm6a39p6VZfa8HmVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

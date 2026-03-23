@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(sleep 20 && jobs -l 2>&1)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(gh repo:*)",
+      "Bash(kill 17954 2>/dev/null && echo \"stopped\")",
+      "Bash(/opt/homebrew/bin/flutter build:*)",
+      "Bash(kill 18258 2>/dev/null && echo \"stopped\")",
+      "Bash(git add:*)",
+      "Bash(npm install:*)",
+      "Bash(firebase --version)",
+      "Bash(dart pub:*)",
+      "Bash(export PATH=\"$PATH\":\"$HOME/.pub-cache/bin\")",
+      "Bash(firebase login:*)",
+      "Bash(firebase projects:list)",
+      "Bash(/opt/homebrew/bin/flutter pub:*)"
     ]
   }
 }
