@@ -14,7 +14,9 @@
       "Bash(export PATH=\"$PATH\":\"$HOME/.pub-cache/bin\")",
       "Bash(firebase login:*)",
       "Bash(firebase projects:list)",
-      "Bash(/opt/homebrew/bin/flutter pub:*)"
+      "Bash(/opt/homebrew/bin/flutter pub:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(git commit:*)"
     ]
   }
 }
