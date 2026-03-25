@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/member_model.dart';
 import '../../services/mock_service.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/csv_download.dart';
 import 'admin_member_register_screen.dart';
 
 class AdminMemberListScreen extends StatefulWidget {
@@ -126,7 +127,7 @@ class _AdminMemberListScreenState extends State<AdminMemberListScreen> {
 
   void _exportCsv() {
     final buffer = StringBuffer();
-    buffer.writeln('번호,마을장,리더,이름,성별,또래,생년월일,전화번호,라인아웃,출석률,등록일');
+    buffer.writeln('번호,마을장,리더,이름,성별,또래,생년월일,전화번호,라인아웃,출석률(%),등록일');
     for (int i = 0; i < _filtered.length; i++) {
       final m = _filtered[i];
       final rate = _attendanceRates[m.id]?.toStringAsFixed(1) ?? '-';
@@ -134,47 +135,14 @@ class _AdminMemberListScreenState extends State<AdminMemberListScreen> {
       buffer.writeln(
         '${i + 1},${m.villageMasterName ?? ''},${m.leaderName ?? ''},'
         '${m.name},${m.genderDisplay},${m.peer ?? ''},${m.birthDate ?? ''},'
-        '${m.phone},${m.lineOutDisplay},$rate%,$regDate',
+        '${m.phone},${m.lineOutDisplay},$rate,$regDate',
       );
     }
-
-    // Web 다운로드
-    _downloadCsv(buffer.toString(), '셀원명단_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv');
-  }
-
-  void _downloadCsv(String content, String filename) {
-    try {
-      // dart:html은 web에서만 동작
-      // ignore: avoid_web_libraries_in_flutter
-      final dynamic html = _getHtml();
-      if (html == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('엑셀 내보내기는 웹에서만 지원합니다')),
-        );
-        return;
-      }
-      final bytes = const _Utf8WithBom().encode(content);
-      final blob = html.Blob([bytes], 'text/csv;charset=utf-8');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.document.createElement('a') as dynamic;
-      anchor.href = url;
-      anchor.download = filename;
-      anchor.click();
-      html.Url.revokeObjectUrl(url);
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('CSV 내보내기가 완료되었습니다 (콘솔 확인)')),
-      );
-      debugPrint(content);
-    }
-  }
-
-  dynamic _getHtml() {
-    try {
-      return null; // Web 환경에서는 실제 dart:html 사용
-    } catch (_) {
-      return null;
-    }
+    final filename = '셀원명단_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
+    downloadCsv(buffer.toString(), filename);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$filename 다운로드 완료')),
+    );
   }
 
   @override
@@ -565,10 +533,3 @@ class _GenderFilter extends StatelessWidget {
   }
 }
 
-class _Utf8WithBom {
-  const _Utf8WithBom();
-  List<int> encode(String s) {
-    final bom = [0xEF, 0xBB, 0xBF];
-    return [...bom, ...s.codeUnits];
-  }
-}
