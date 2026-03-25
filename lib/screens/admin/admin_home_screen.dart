@@ -7,6 +7,7 @@ import '../../services/mock_service.dart';
 import '../../utils/app_theme.dart';
 import 'village_detail_screen.dart';
 import 'admin_member_list_screen.dart';
+import 'admin_role_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -21,20 +22,26 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user!;
+    final isSuperAdmin = user.isSuperAdmin;
 
+    final tabTitles = ['전체 현황', '셀원 관리', if (isSuperAdmin) '권한 관리'];
     final tabs = [
       _DashboardTab(onLogout: () => _confirmLogout(context)),
       const AdminMemberListScreen(),
+      if (isSuperAdmin) const AdminRoleScreen(),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_tabIndex == 0 ? '전체 현황' : '셀원 관리'),
+        title: Text(tabTitles[_tabIndex]),
         actions: [
           if (_tabIndex == 0)
-            Text(
-              user.name,
-              style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                user.name,
+                style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+              ),
             ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -48,17 +55,23 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         onTap: (i) => setState(() => _tabIndex = i),
         selectedItemColor: AppTheme.primary,
         unselectedItemColor: AppTheme.textSecondary,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart_outlined),
             activeIcon: Icon(Icons.bar_chart),
             label: '전체 현황',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.people_outline),
             activeIcon: Icon(Icons.people),
             label: '셀원 관리',
           ),
+          if (isSuperAdmin)
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.security_outlined),
+              activeIcon: Icon(Icons.security),
+              label: '권한 관리',
+            ),
         ],
       ),
     );
