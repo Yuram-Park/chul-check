@@ -104,6 +104,7 @@ class _AppEntryState extends State<AppEntry> {
         if (!auth.isLoggedIn) return const LoginScreen();
 
         switch (auth.user!.role) {
+          case UserRole.superAdmin:
           case UserRole.admin:
             return const AdminHomeScreen();
           case UserRole.villageMaster:

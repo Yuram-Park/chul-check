@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/mock_service.dart';
 import '../../utils/app_theme.dart';
 import 'village_detail_screen.dart';
+import 'admin_member_list_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -15,6 +16,88 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  int _tabIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.read<AuthProvider>().user!;
+
+    final tabs = [
+      _DashboardTab(onLogout: () => _confirmLogout(context)),
+      const AdminMemberListScreen(),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_tabIndex == 0 ? '전체 현황' : '셀원 관리'),
+        actions: [
+          if (_tabIndex == 0)
+            Text(
+              user.name,
+              style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+            ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _confirmLogout(context),
+          ),
+        ],
+      ),
+      body: tabs[_tabIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _tabIndex,
+        onTap: (i) => setState(() => _tabIndex = i),
+        selectedItemColor: AppTheme.primary,
+        unselectedItemColor: AppTheme.textSecondary,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart_outlined),
+            activeIcon: Icon(Icons.bar_chart),
+            label: '전체 현황',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline),
+            activeIcon: Icon(Icons.people),
+            label: '셀원 관리',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('로그아웃'),
+        content: const Text('로그아웃 하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AuthProvider>().logout();
+            },
+            child: const Text('로그아웃', style: TextStyle(color: AppTheme.absent)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardTab extends StatefulWidget {
+  final VoidCallback onLogout;
+
+  const _DashboardTab({required this.onLogout});
+
+  @override
+  State<_DashboardTab> createState() => _DashboardTabState();
+}
+
+class _DashboardTabState extends State<_DashboardTab> {
   List<VillageModel> _villages = [];
   Map<String, dynamic> _stats = {};
   bool _isLoading = true;
@@ -49,61 +132,32 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('전체 현황'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_month_outlined),
-            onPressed: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _selectedDate,
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
-                locale: const Locale('ko', 'KR'),
-              );
-              if (picked != null) _setDate(picked);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _confirmLogout(context),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: _DatePickerBar(
-            selectedDate: _selectedDate,
-            onDateChanged: _setDate,
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildWelcome(user.name),
-                  const SizedBox(height: 16),
-                  _buildOverallStats(),
-                  const SizedBox(height: 20),
-                  const Text(
-                    '마을별 현황',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _loadData,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _DatePickerBar(selectedDate: _selectedDate, onDateChanged: _setDate),
+                const SizedBox(height: 16),
+                _buildWelcome(user.name),
+                const SizedBox(height: 16),
+                _buildOverallStats(),
+                const SizedBox(height: 20),
+                const Text(
+                  '마을별 현황',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
                   ),
-                  const SizedBox(height: 8),
-                  ..._villages.map((v) => _buildVillageCard(v)),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                ..._villages.map((v) => _buildVillageCard(v)),
+              ],
             ),
-    );
+          );
   }
 
   Widget _buildWelcome(String name) {
@@ -167,8 +221,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryLight,
                   borderRadius: BorderRadius.circular(20),
@@ -185,15 +238,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          // 출석률 바
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: total > 0 ? present / total : 0,
               minHeight: 8,
               backgroundColor: const Color(0xFFE2E8F0),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppTheme.present),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.present),
             ),
           ),
           const SizedBox(height: 16),
@@ -227,52 +278,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         title: Text(
           village.name,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
         ),
         subtitle: Text(
           '마을장: ${village.masterName} · ${village.cells.length}개 셀',
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppTheme.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
         ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppTheme.textSecondary,
-        ),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => VillageDetailScreen(village: village),
-          ),
+          MaterialPageRoute(builder: (_) => VillageDetailScreen(village: village)),
         ),
-      ),
-    );
-  }
-
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('로그아웃'),
-        content: const Text('로그아웃 하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<AuthProvider>().logout();
-            },
-            child: const Text('로그아웃',
-                style: TextStyle(color: AppTheme.absent)),
-          ),
-        ],
       ),
     );
   }
@@ -282,24 +298,24 @@ class _DatePickerBar extends StatelessWidget {
   final DateTime selectedDate;
   final ValueChanged<DateTime> onDateChanged;
 
-  const _DatePickerBar({
-    required this.selectedDate,
-    required this.onDateChanged,
-  });
+  const _DatePickerBar({required this.selectedDate, required this.onDateChanged});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            onPressed: () =>
-                onDateChanged(selectedDate.subtract(const Duration(days: 7))),
+            onPressed: () => onDateChanged(selectedDate.subtract(const Duration(days: 7))),
           ),
           Expanded(
             child: GestureDetector(
@@ -329,8 +345,7 @@ class _DatePickerBar extends StatelessWidget {
             icon: const Icon(Icons.chevron_right),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            onPressed: selectedDate.isBefore(
-                    DateTime.now().subtract(const Duration(days: 1)))
+            onPressed: selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))
                 ? () => onDateChanged(selectedDate.add(const Duration(days: 7)))
                 : null,
           ),
@@ -345,11 +360,7 @@ class _StatChip extends StatelessWidget {
   final int value;
   final Color color;
 
-  const _StatChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _StatChip({required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -357,17 +368,9 @@ class _StatChip extends StatelessWidget {
       children: [
         Text(
           '$value',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
         ),
-        Text(
-          label,
-          style:
-              const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
       ],
     );
   }

@@ -1,4 +1,4 @@
-enum UserRole { leader, villageMaster, admin }
+enum UserRole { leader, villageMaster, admin, superAdmin }
 
 enum Gender { male, female }
 
@@ -41,6 +41,8 @@ class UserModel {
 
   static UserRole _parseRole(String role) {
     switch (role) {
+      case 'SUPER_ADMIN':
+        return UserRole.superAdmin;
       case 'ADMIN':
         return UserRole.admin;
       case 'VILLAGE_MASTER':
@@ -50,8 +52,13 @@ class UserModel {
     }
   }
 
+  bool get isAdmin => role == UserRole.admin || role == UserRole.superAdmin;
+  bool get isSuperAdmin => role == UserRole.superAdmin;
+
   String get roleDisplayName {
     switch (role) {
+      case UserRole.superAdmin:
+        return 'Super Admin';
       case UserRole.admin:
         return '간사/교역자';
       case UserRole.villageMaster:
