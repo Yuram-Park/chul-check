@@ -175,20 +175,13 @@ class _AdminMemberListScreenState extends State<AdminMemberListScreen> {
 
   Widget _buildFilterBar() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: Colors.white,
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
-          _FilterField(
-            label: '이름',
-            onChanged: (v) {
-              _filterName = v;
-              _currentPage = 0;
-              _applyFilter();
-            },
-          ),
           _FilterField(
             label: '마을장',
             onChanged: (v) {
@@ -206,9 +199,9 @@ class _AdminMemberListScreenState extends State<AdminMemberListScreen> {
             },
           ),
           _FilterField(
-            label: '또래',
+            label: '이름',
             onChanged: (v) {
-              _filterPeer = v;
+              _filterName = v;
               _currentPage = 0;
               _applyFilter();
             },
@@ -217,6 +210,14 @@ class _AdminMemberListScreenState extends State<AdminMemberListScreen> {
             value: _filterGender,
             onChanged: (v) {
               setState(() => _filterGender = v);
+              _currentPage = 0;
+              _applyFilter();
+            },
+          ),
+          _FilterField(
+            label: '또래',
+            onChanged: (v) {
+              _filterPeer = v;
               _currentPage = 0;
               _applyFilter();
             },
@@ -373,15 +374,16 @@ class _TableRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: backgroundColor,
       decoration: isHeader
-          ? const BoxDecoration(
-              border: Border(
+          ? BoxDecoration(
+              color: backgroundColor,
+              border: const Border(
                 bottom: BorderSide(color: Color(0xFFE2E8F0), width: 2),
               ),
             )
-          : const BoxDecoration(
-              border: Border(
+          : BoxDecoration(
+              color: backgroundColor,
+              border: const Border(
                 bottom: BorderSide(color: Color(0xFFF1F5F9)),
               ),
             ),

@@ -93,6 +93,7 @@ class _AdminRoleScreenState extends State<AdminRoleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('권한 관리')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

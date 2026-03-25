@@ -199,6 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text('간사: 박간사0303 / 0003',
                           style: TextStyle(
                               fontSize: 12, color: Color(0xFF166534))),
+                      Text('Super Admin: 김수퍼0101 / 0031',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF166534))),
                     ],
                   ),
                 ),

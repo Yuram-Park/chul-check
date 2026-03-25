@@ -226,40 +226,22 @@ class _AdminMemberRegisterScreenState extends State<AdminMemberRegisterScreen> {
             ),
           ),
           // 리더
-          SizedBox(
+          _dropdownCell(
             width: 100,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: DropdownButtonFormField<String>(
-                value: _leaderValues[i],
-                hint: const Text('선택', style: TextStyle(fontSize: 12)),
-                items: _leaderOptions
-                    .map((l) => DropdownMenuItem(value: l, child: Text(l, style: const TextStyle(fontSize: 12))))
-                    .toList(),
-                onChanged: (v) => setState(() => _leaderValues[i] = v),
-                decoration: _inputDecoration(),
-                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
-              ),
-            ),
+            value: _leaderValues[i],
+            hint: '선택',
+            items: _leaderOptions,
+            onChanged: (v) => setState(() => _leaderValues[i] = v),
           ),
           // 이름
           _inputCell(_nameCtrl[i], 100, hint: '이름'),
           // 성별
-          SizedBox(
+          _dropdownCell(
             width: 70,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: DropdownButtonFormField<String>(
-                value: _genderValues[i],
-                hint: const Text('성별', style: TextStyle(fontSize: 12)),
-                items: ['남', '여']
-                    .map((g) => DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 12))))
-                    .toList(),
-                onChanged: (v) => setState(() => _genderValues[i] = v),
-                decoration: _inputDecoration(),
-                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
-              ),
-            ),
+            value: _genderValues[i],
+            hint: '성별',
+            items: const ['남', '여'],
+            onChanged: (v) => setState(() => _genderValues[i] = v),
           ),
           // 또래
           _inputCell(_peerCtrl[i], 90, hint: '예: 98년생'),
@@ -292,6 +274,43 @@ class _AdminMemberRegisterScreenState extends State<AdminMemberRegisterScreen> {
           controller: ctrl,
           decoration: _inputDecoration(hint: hint),
           style: const TextStyle(fontSize: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _dropdownCell({
+    required double width,
+    required String? value,
+    required String hint,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return SizedBox(
+      width: width,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Container(
+          height: 34,
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              hint: Text(hint, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+              items: items.map((v) => DropdownMenuItem(
+                value: v,
+                child: Text(v, style: const TextStyle(fontSize: 12)),
+              )).toList(),
+              onChanged: onChanged,
+              isExpanded: true,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
+              iconSize: 18,
+            ),
+          ),
         ),
       ),
     );

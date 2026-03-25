@@ -24,9 +24,18 @@ class _AdminLeaderStoryScreenState extends State<AdminLeaderStoryScreen> {
   String _filterStatus = '';
   String _filterLineOut = '전체';
 
+  // 헤더·데이터 가로 스크롤 동기화
+  final ScrollController _headerScrollCtrl = ScrollController();
+  final ScrollController _bodyScrollCtrl = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _bodyScrollCtrl.addListener(() {
+      if (_headerScrollCtrl.hasClients) {
+        _headerScrollCtrl.jumpTo(_bodyScrollCtrl.offset);
+      }
+    });
     _loadData();
   }
 
@@ -38,6 +47,13 @@ class _AdminLeaderStoryScreenState extends State<AdminLeaderStoryScreen> {
       _isLoading = false;
     });
     _applyFilter();
+  }
+
+  @override
+  void dispose() {
+    _headerScrollCtrl.dispose();
+    _bodyScrollCtrl.dispose();
+    super.dispose();
   }
 
   void _applyFilter() {
@@ -143,7 +159,9 @@ class _AdminLeaderStoryScreenState extends State<AdminLeaderStoryScreen> {
         border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 2)),
       ),
       child: SingleChildScrollView(
+        controller: _headerScrollCtrl,
         scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
         child: Row(children: [
           _H('#', 44),
           _H('이름', 80, style: style),
@@ -177,6 +195,7 @@ class _AdminLeaderStoryScreenState extends State<AdminLeaderStoryScreen> {
     }
     return SingleChildScrollView(
       child: SingleChildScrollView(
+        controller: _bodyScrollCtrl,
         scrollDirection: Axis.horizontal,
         child: Column(
           children: _filtered.asMap().entries.map((e) {
