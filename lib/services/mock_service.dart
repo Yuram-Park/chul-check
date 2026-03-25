@@ -1,6 +1,7 @@
 // 백엔드 서버 없이 UI 확인을 위한 Mock 데이터 서비스
 import '../models/user_model.dart';
 import '../models/member_model.dart';
+import '../models/member_story_model.dart';
 import '../models/attendance_model.dart';
 import '../models/cell_model.dart';
 import '../models/village_model.dart';
@@ -261,11 +262,83 @@ class MockService {
 
   static Future<Map<int, double>> getMemberAttendanceRates(List<int> memberIds) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    // Mock: 각 셀원 출석률 (실제는 출석 기록 기반 계산)
     final Map<int, double> rates = {};
     for (final id in memberIds) {
       rates[id] = (50 + (id % 50)).toDouble();
     }
     return rates;
+  }
+
+  // ─── 리더 스토리 ───────────────────────────────────────────────
+
+  static final List<MemberStoryModel> _stories = [
+    MemberStoryModel(
+      id: 1, memberId: 101, memberName: '김민준', peer: '98년생',
+      villageName: '다윗마을', villageMasterName: '김마을장', leaderName: '이리더',
+      lineOut: false, lineOutReason: null,
+      currentStatus: '활동중', previousCommunity: '청소년부',
+      trainingService: '새가족팀', comment1: '성실히 출석 중', comment2: null,
+      registeredAt: DateTime(2024, 3, 10),
+    ),
+    MemberStoryModel(
+      id: 2, memberId: 102, memberName: '이서연', peer: '99년생',
+      villageName: '다윗마을', villageMasterName: '김마을장', leaderName: '이리더',
+      lineOut: false, lineOutReason: null,
+      currentStatus: '활동중', previousCommunity: null,
+      trainingService: 'DT수료', comment1: '리더십 관심 있음', comment2: null,
+      registeredAt: DateTime(2024, 3, 12),
+    ),
+    MemberStoryModel(
+      id: 3, memberId: 103, memberName: '박지훈', peer: '97년생',
+      villageName: '다윗마을', villageMasterName: '김마을장', leaderName: '이리더',
+      lineOut: true, lineOutReason: '타지역 이사',
+      currentStatus: '라인아웃', previousCommunity: '직장부',
+      trainingService: null, comment1: '연락 두절', comment2: '재등록 가능성 있음',
+      registeredAt: DateTime(2024, 4, 1),
+    ),
+    MemberStoryModel(
+      id: 4, memberId: 201, memberName: '윤지은', peer: '98년생',
+      villageName: '다윗마을', villageMasterName: '김마을장', leaderName: '박리더',
+      lineOut: false, lineOutReason: null,
+      currentStatus: '활동중', previousCommunity: '찬양팀',
+      trainingService: '팀장', comment1: '찬양 은사', comment2: null,
+      registeredAt: DateTime(2024, 2, 20),
+    ),
+    MemberStoryModel(
+      id: 5, memberId: 203, memberName: '임나연', peer: '00년생',
+      villageName: '다윗마을', villageMasterName: '김마을장', leaderName: '박리더',
+      lineOut: true, lineOutReason: '학업',
+      currentStatus: '등록대기', previousCommunity: null,
+      trainingService: null, comment1: '복학 후 재연결 예정', comment2: null,
+      registeredAt: DateTime(2024, 5, 15),
+    ),
+    MemberStoryModel(
+      id: 6, memberId: 301, memberName: '한동훈', peer: '97년생',
+      villageName: '솔로몬마을', villageMasterName: '이마을장', leaderName: '최리더',
+      lineOut: false, lineOutReason: null,
+      currentStatus: '활동중', previousCommunity: '중등부',
+      trainingService: 'DT수료, 새가족팀', comment1: null, comment2: null,
+      registeredAt: DateTime(2024, 1, 30),
+    ),
+    MemberStoryModel(
+      id: 7, memberId: 304, memberName: '류미소', peer: '98년생',
+      villageName: '솔로몬마을', villageMasterName: '이마을장', leaderName: '최리더',
+      lineOut: true, lineOutReason: '군입대',
+      currentStatus: '라인아웃', previousCommunity: null,
+      trainingService: null, comment1: '전역 후 복귀 예정 24.12', comment2: null,
+      registeredAt: DateTime(2024, 7, 22),
+    ),
+  ];
+
+  static Future<List<MemberStoryModel>> getAllStories() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final list = List<MemberStoryModel>.from(_stories);
+    list.sort((a, b) => b.registeredAt.compareTo(a.registeredAt));
+    return list;
+  }
+
+  static Future<void> addStories(List<MemberStoryModel> newStories) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    _stories.addAll(newStories);
   }
 }

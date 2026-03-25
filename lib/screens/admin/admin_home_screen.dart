@@ -7,7 +7,7 @@ import '../../services/mock_service.dart';
 import '../../utils/app_theme.dart';
 import 'village_detail_screen.dart';
 import 'admin_member_list_screen.dart';
-import 'admin_role_screen.dart';
+import 'admin_story_landing_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -24,11 +24,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     final user = context.read<AuthProvider>().user!;
     final isSuperAdmin = user.isSuperAdmin;
 
-    final tabTitles = ['전체 현황', '셀원 관리', if (isSuperAdmin) '권한 관리'];
+    final tabTitles = ['전체 현황', '셀원 관리', if (isSuperAdmin) '스토리/권한관리'];
     final tabs = [
       _DashboardTab(onLogout: () => _confirmLogout(context)),
       const AdminMemberListScreen(),
-      if (isSuperAdmin) const AdminRoleScreen(),
+      if (isSuperAdmin) const AdminStoryLandingScreen(),
     ];
 
     return Scaffold(
@@ -68,9 +68,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
           if (isSuperAdmin)
             const BottomNavigationBarItem(
-              icon: Icon(Icons.security_outlined),
-              activeIcon: Icon(Icons.security),
-              label: '권한 관리',
+              icon: Icon(Icons.auto_stories_outlined),
+              activeIcon: Icon(Icons.auto_stories),
+              label: '스토리/권한',
             ),
         ],
       ),
